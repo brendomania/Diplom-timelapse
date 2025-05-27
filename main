@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Секундомеры презентации</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .total-timer {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-timer h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        .total-time {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .section.active {
+            background: #f0f9ff;
+            border-left-color: #10b981;
+            transform: scale(1.02);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .section-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .section-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            min-width: 120px;
+            text-align: center;
+            background: #f3f4f6;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .timer-display.running {
+            background: #dcfce7;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            text-align: center;
+            padding: 30px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .global-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .section-info {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Социальные сети и информационные войны</h1>
+            <div class="total-timer">
+                <h2>Общее время презентации:</h2>
+                <div class="total-time" id="totalTime">0:00</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="section" data-section="0">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">0</div>
+                        <div>
+                            <div class="section-title">Вступление</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(0)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(0)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="1">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">1</div>
+                        <div>
+                            <div class="section-title">Роль и место социальных сетей</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(1)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(1)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="2">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">2</div>
+                        <div>
+                            <div class="section-title">ОММ (Операции по манипулированию массами)</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(2)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(2)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="3">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">3</div>
+                        <div>
+                            <div class="section-title">Соцсети как инструмент информационной войны</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(3)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(3)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="4">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">4</div>
+                        <div>
+                            <div class="section-title">Россия - Украина</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(4)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(4)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="5">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">5</div>
+                        <div>
+                            <div class="section-title">Арабская весна</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(5)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(5)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="6">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">6</div>
+                        <div>
+                            <div class="section-title">Израиль - Палестина</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(6)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(6)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="7">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">7</div>
+                        <div>
+                            <div class="section-title">Влияние на политические процессы</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(7)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(7)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="8">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">8</div>
+                        <div>
+                            <div class="section-title">SWOT-анализ</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(8)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(8)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="9">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">9</div>
+                        <div>
+                            <div class="section-title">Меры противодействия</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(9)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(9)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" data-section="10">
+                <div class="section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="section-number">10</div>
+                        <div>
+                            <div class="section-title">Заключение</div>
+                        </div>
+                    </div>
+                    <div class="section-controls">
+                        <div class="timer-display">0:00</div>
+                        <button class="btn btn-start" onclick="toggleStopwatch(10)">Старт</button>
+                        <button class="btn btn-reset" onclick="resetStopwatch(10)">Сброс</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="global-controls">
+                <button class="btn btn-reset" onclick="resetAllStopwatches()">Сбросить все секундомеры</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="longestSection">0:00</div>
+                    <div class="stat-label">Самый длинный раздел</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSections">11</div>
+                    <div class="stat-label">Всего разделов</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stopwatches = {};
+        let intervals = {};
+        let globalStopwatch = 0;
+        let globalInterval = null;
+
+        // Запуск общего секундомера при старте любого раздела
+        function startGlobalTimer() {
+            if (!globalInterval) {
+                globalInterval = setInterval(() => {
+                    globalStopwatch++;
+                    document.getElementById('totalTime').textContent = formatTime(globalStopwatch);
+                }, 1000);
+            }
+        }
+
+        // Остановка общего секундомера если все разделы остановлены
+        function checkGlobalTimer() {
+            let hasActiveTimers = false;
+            Object.values(intervals).forEach(interval => {
+                if (interval !== null) hasActiveTimers = true;
+            });
+            
+            if (!hasActiveTimers && globalInterval) {
+                clearInterval(globalInterval);
+                globalInterval = null;
+            }
+        }
+
+        // Остановка всех активных секундомеров кроме указанного
+        function stopAllExcept(excludeIndex) {
+            for (let i = 0; i <= 10; i++) {
+                if (i !== excludeIndex && intervals[i]) {
+                    const section = document.querySelector(`[data-section="${i}"]`);
+                    const display = section.querySelector('.timer-display');
+                    const button = section.querySelector('.btn');
+                    
+                    clearInterval(intervals[i]);
+                    intervals[i] = null;
+                    
+                    section.classList.remove('active');
+                    display.classList.remove('running');
+                    button.textContent = 'Старт';
+                    button.className = 'btn btn-start';
+                }
+            }
+        }
+
+        // Обновление общего времени как сумма всех секундомеров
+        function updateGlobalTime() {
+            let totalTime = 0;
+            Object.values(stopwatches).forEach(time => {
+                totalTime += time || 0;
+            });
+            
+            globalStopwatch = totalTime;
+            document.getElementById('totalTime').textContent = formatTime(globalStopwatch);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleStopwatch(sectionIndex) {
+            const section = document.querySelector(`[data-section="${sectionIndex}"]`);
+            const display = section.querySelector('.timer-display');
+            const button = section.querySelector('.btn');
+            
+            if (!stopwatches[sectionIndex]) {
+                stopwatches[sectionIndex] = 0;
+            }
+            
+            // Если секундомер запущен - останавливаем
+            if (intervals[sectionIndex]) {
+                clearInterval(intervals[sectionIndex]);
+                intervals[sectionIndex] = null;
+                
+                section.classList.remove('active');
+                display.classList.remove('running');
+                button.textContent = 'Старт';
+                button.className = 'btn btn-start';
+                
+                checkGlobalTimer();
+            } else {
+                // Останавливаем все другие секундомеры перед запуском нового
+                stopAllExcept(sectionIndex);
+                
+                // Запускаем выбранный секундомер
+                section.classList.add('active');
+                display.classList.add('running');
+                button.textContent = 'Стоп';
+                button.className = 'btn btn-stop';
+                
+                startGlobalTimer();
+                
+                intervals[sectionIndex] = setInterval(() => {
+                    stopwatches[sectionIndex]++;
+                    display.textContent = formatTime(stopwatches[sectionIndex]);
+                    updateGlobalTime(); // Обновляем общее время каждую секунду
+                    updateStats();
+                }, 1000);
+            }
+            
+            updateStats();
+        }
+
+        function resetStopwatch(sectionIndex) {
+            if (intervals[sectionIndex]) {
+                clearInterval(intervals[sectionIndex]);
+                intervals[sectionIndex] = null;
+            }
+            
+            const section = document.querySelector(`[data-section="${sectionIndex}"]`);
+            if (section) {
+                const display = section.querySelector('.timer-display');
+                const button = section.querySelector('.btn');
+                
+                stopwatches[sectionIndex] = 0;
+                display.textContent = formatTime(0);
+                section.classList.remove('active');
+                display.classList.remove('running');
+                button.textContent = 'Старт';
+                button.className = 'btn btn-start';
+            }
+            
+            checkGlobalTimer();
+            updateGlobalTime(); // Обновляем общее время после сброса
+            updateStats();
+        }
+
+        function resetAllStopwatches() {
+            // Останавливаем все интервалы
+            for (let i = 0; i <= 10; i++) {
+                if (intervals[i]) {
+                    clearInterval(intervals[i]);
+                    intervals[i] = null;
+                }
+            }
+            
+            // Сброс глобального секундомера
+            if (globalInterval) {
+                clearInterval(globalInterval);
+                globalInterval = null;
+            }
+            globalStopwatch = 0;
+            document.getElementById('totalTime').textContent = formatTime(0);
+            
+            // Сброс всех индивидуальных секундомеров и кнопок
+            for (let i = 0; i <= 10; i++) {
+                const section = document.querySelector(`[data-section="${i}"]`);
+                if (section) {
+                    const display = section.querySelector('.timer-display');
+                    const button = section.querySelector('.btn');
+                    
+                    stopwatches[i] = 0;
+                    display.textContent = formatTime(0);
+                    section.classList.remove('active');
+                    display.classList.remove('running');
+                    button.textContent = 'Старт';
+                    button.classList.remove('btn-stop');
+                    button.classList.add('btn-start');
+                }
+            }
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            // Поиск самого длинного раздела
+            let longestTime = 0;
+            Object.values(stopwatches).forEach(time => {
+                if (time > longestTime) longestTime = time;
+            });
+            document.getElementById('longestSection').textContent = formatTime(longestTime);
+        }
+
+        // Инициализация всех секундомеров
+        for (let i = 0; i <= 10; i++) {
+            stopwatches[i] = 0;
+            intervals[i] = null;
+        }
+
+        // Начальное обновление статистики
+        updateStats();
+    </script>
+</body>
+</html>
